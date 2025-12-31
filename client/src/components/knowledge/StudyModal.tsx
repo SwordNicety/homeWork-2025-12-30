@@ -221,15 +221,15 @@ export default function StudyModal({ sectionName, items, onClose, onStudyUpdate 
                 onClick={handleContentClick}
             >
                 {/* 上半部分：左-关键字，右-简注+简介+音频 */}
-                <div className="flex gap-4 mb-4" style={{ minHeight: revealStage === 1 ? '60vh' : '20vh' }}>
+                <div className="flex gap-4 mb-4" style={{ minHeight: revealStage === 1 ? '50vh' : '15vh' }}>
                     {/* 左上: 知识关键字 - 始终显示 */}
-                    <div className="flex-1 bg-white/10 backdrop-blur-lg rounded-2xl p-6 flex items-center justify-center">
+                    <div className="flex-1 bg-white/10 backdrop-blur-lg rounded-2xl py-2 px-4 flex items-center justify-center">
                         {currentItem.keywords ? (
-                            <div className="flex items-center justify-center gap-4 md:gap-8 flex-wrap">
+                            <div className="flex items-center justify-center gap-3 md:gap-6 flex-wrap">
                                 {currentItem.keywords.split(/[,，]/).filter(kw => kw.trim()).map((kw, i) => (
                                     <span
                                         key={i}
-                                        className="px-6 md:px-10 py-4 md:py-6 bg-gradient-to-r from-cyan-500/40 to-teal-500/40 backdrop-blur-sm rounded-2xl md:rounded-3xl font-bold text-white shadow-2xl border-2 border-white/30 animate-pulse"
+                                        className="px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-cyan-500/40 to-teal-500/40 backdrop-blur-sm rounded-xl md:rounded-2xl font-bold text-white shadow-2xl border-2 border-white/30 animate-pulse"
                                         style={{ fontSize: `${calculatedFontSize}px` }}
                                     >
                                         {kw.trim()}
@@ -353,15 +353,15 @@ export default function StudyModal({ sectionName, items, onClose, onStudyUpdate 
 
                                     {/* 图片 */}
                                     {hasImages && (
-                                        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 overflow-auto">
-                                            <h3 className="text-lg font-semibold text-cyan-300 mb-4">🖼️ 图片</h3>
-                                            <div className="flex flex-wrap gap-4 justify-center">
+                                        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 overflow-auto">
+                                            <h3 className="text-lg font-semibold text-cyan-300 mb-3 sticky top-0 bg-inherit">🖼️ 图片</h3>
+                                            <div className="flex flex-col gap-4">
                                                 {imagePaths.map((path, i) => (
                                                     <img
                                                         key={i}
                                                         src={`/${path}`}
                                                         alt=""
-                                                        className="max-h-48 rounded-xl shadow-lg cursor-pointer hover:scale-105 transition"
+                                                        className="w-full object-contain rounded-xl shadow-lg cursor-pointer hover:opacity-90 transition"
                                                         onClick={(e) => {
                                                             e.stopPropagation()
                                                             window.open(`/${path}`, '_blank')
@@ -374,16 +374,16 @@ export default function StudyModal({ sectionName, items, onClose, onStudyUpdate 
 
                                     {/* 视频 */}
                                     {hasVideos && (
-                                        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 overflow-auto">
-                                            <h3 className="text-lg font-semibold text-cyan-300 mb-4">🎬 视频</h3>
-                                            <div className="flex flex-wrap gap-4 justify-center">
+                                        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 overflow-auto">
+                                            <h3 className="text-lg font-semibold text-cyan-300 mb-3 sticky top-0 bg-inherit">🎬 视频</h3>
+                                            <div className="flex flex-col gap-4">
                                                 {videoPaths.map((path, i) => (
                                                     <video
                                                         key={i}
                                                         ref={(el) => { if (el) videoRefs.current[i] = el }}
                                                         controls
                                                         src={`/${path}`}
-                                                        className="max-h-48 rounded-xl"
+                                                        className="w-full rounded-xl"
                                                         onClick={(e) => e.stopPropagation()}
                                                     />
                                                 ))}
