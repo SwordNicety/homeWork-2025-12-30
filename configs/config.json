@@ -26,5 +26,7 @@
         },
         "uploadPath": "uploadFiles/members"
     },
-    "knowledgeBaseConfig": {}
+    "knowledgeBaseConfig": {
+        "keywordDisplayHeight": 400
+    }
 }

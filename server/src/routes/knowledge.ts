@@ -489,6 +489,49 @@ export default async function knowledgeRoutes(fastify: FastifyInstance) {
         }
     });
 
+    // 清空某个 section 下所有条目的学习记录
+    fastify.put<{ Params: { sectionId: string } }>('/api/knowledge/sections/:sectionId/clear-study-records', async (request, reply) => {
+        try {
+            const { sectionId } = request.params;
+            db.prepare(`
+                UPDATE knowledge_items 
+                SET correct_count = 0, 
+                    wrong_count = 0, 
+                    consecutive_correct = 0, 
+                    consecutive_wrong = 0,
+                    last_study_at = NULL,
+                    last_correct_at = NULL,
+                    last_wrong_at = NULL
+                WHERE section_id = ?
+            `).run(sectionId);
+            return { success: true };
+        } catch (error) {
+            return reply.status(500).send({ success: false, error: String(error) });
+        }
+    });
+
+    // 清空单个条目的学习记录
+    fastify.put<{ Params: { id: string } }>('/api/knowledge/items/:id/clear-study-record', async (request, reply) => {
+        try {
+            db.prepare(`
+                UPDATE knowledge_items 
+                SET correct_count = 0, 
+                    wrong_count = 0, 
+                    consecutive_correct = 0, 
+                    consecutive_wrong = 0,
+                    last_study_at = NULL,
+                    last_correct_at = NULL,
+                    last_wrong_at = NULL
+                WHERE id = ?
+            `).run(request.params.id);
+            return { success: true };
+        } catch (error) {
+            return reply.status(500).send({ success: false, error: String(error) });
+        }
+    });
+
+    // ============ 文件上传 ============
+
     // 上传知识条目媒体文件（图片/音频/视频）
     fastify.post<{ Querystring: { categoryDir: string; sectionDir: string; type: 'image' | 'audio' | 'video' } }>('/api/upload/knowledge-media', async (request, reply) => {
         try {

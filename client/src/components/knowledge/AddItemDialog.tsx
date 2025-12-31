@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { X, Upload, Check, Plus, Trash2, Image, Music, Video } from 'lucide-react'
+import { X, Upload, Check, Plus, Trash2, Image, Music, Video, RotateCcw } from 'lucide-react'
 
 interface KnowledgeItem {
     id?: number
@@ -56,6 +56,7 @@ export default function AddItemDialog({ sectionId, categoryDir, sectionDir, item
 
     const [uploading, setUploading] = useState<string | null>(null)
     const [saving, setSaving] = useState(false)
+    const [localItem, setLocalItem] = useState<KnowledgeItem | null | undefined>(item)
 
     useEffect(() => {
         if (item) {
@@ -65,8 +66,41 @@ export default function AddItemDialog({ sectionId, categoryDir, sectionDir, item
                 image_paths: item.image_paths || '[]',
                 video_paths: item.video_paths || '[]'
             })
+            setLocalItem(item)
         }
     }, [item])
+
+    // 清理单个条目的学习记录
+    const handleClearStudyRecord = async () => {
+        if (!item?.id || !confirm('确定要清理此知识点的学习记录吗？\n此操作不可恢复！')) {
+            return
+        }
+
+        try {
+            const response = await fetch(`/api/knowledge/items/${item.id}/clear-study-record`, {
+                method: 'PUT'
+            })
+            const result = await response.json()
+            if (result.success) {
+                // 更新本地显示
+                setLocalItem(prev => prev ? {
+                    ...prev,
+                    correct_count: 0,
+                    wrong_count: 0,
+                    consecutive_correct: 0,
+                    consecutive_wrong: 0,
+                    last_study_at: undefined,
+                    last_correct_at: undefined,
+                    last_wrong_at: undefined
+                } : null)
+                alert('已清理学习记录')
+            } else {
+                alert('清理失败: ' + result.error)
+            }
+        } catch (error) {
+            alert('清理失败: ' + error)
+        }
+    }
 
     const parsePathArray = (paths?: string): string[] => {
         try {
@@ -317,33 +351,43 @@ export default function AddItemDialog({ sectionId, categoryDir, sectionDir, item
                     </div>
 
                     {/* 学习统计（只在编辑时显示） */}
-                    {item && (
+                    {localItem && (
                         <div className="border-t pt-4">
-                            <h3 className="font-semibold text-gray-800 mb-3">学习统计</h3>
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="font-semibold text-gray-800">学习统计</h3>
+                                <button
+                                    type="button"
+                                    onClick={handleClearStudyRecord}
+                                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-lg hover:from-orange-500 hover:to-amber-600 transition"
+                                >
+                                    <RotateCcw size={14} />
+                                    清理学习记录
+                                </button>
+                            </div>
                             <div className="grid grid-cols-4 gap-4 text-sm">
                                 <div className="bg-green-50 p-3 rounded-lg">
                                     <div className="text-green-600 font-medium">正确次数</div>
-                                    <div className="text-2xl font-bold text-green-700">{item.correct_count || 0}</div>
+                                    <div className="text-2xl font-bold text-green-700">{localItem.correct_count || 0}</div>
                                 </div>
                                 <div className="bg-red-50 p-3 rounded-lg">
                                     <div className="text-red-600 font-medium">错误次数</div>
-                                    <div className="text-2xl font-bold text-red-700">{item.wrong_count || 0}</div>
+                                    <div className="text-2xl font-bold text-red-700">{localItem.wrong_count || 0}</div>
                                 </div>
                                 <div className="bg-blue-50 p-3 rounded-lg">
                                     <div className="text-blue-600 font-medium">连续正确</div>
-                                    <div className="text-2xl font-bold text-blue-700">{item.consecutive_correct || 0}</div>
+                                    <div className="text-2xl font-bold text-blue-700">{localItem.consecutive_correct || 0}</div>
                                 </div>
                                 <div className="bg-orange-50 p-3 rounded-lg">
                                     <div className="text-orange-600 font-medium">连续错误</div>
-                                    <div className="text-2xl font-bold text-orange-700">{item.consecutive_wrong || 0}</div>
+                                    <div className="text-2xl font-bold text-orange-700">{localItem.consecutive_wrong || 0}</div>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4 mt-3 text-sm text-gray-600">
-                                <div>创建时间：{formatDateTime(item.created_at)}</div>
-                                <div>最后编辑：{formatDateTime(item.updated_at)}</div>
-                                <div>最后学习：{formatDateTime(item.last_study_at)}</div>
-                                <div>最后正确：{formatDateTime(item.last_correct_at)}</div>
-                                <div>最后错误：{formatDateTime(item.last_wrong_at)}</div>
+                                <div>创建时间：{formatDateTime(localItem.created_at)}</div>
+                                <div>最后编辑：{formatDateTime(localItem.updated_at)}</div>
+                                <div>最后学习：{formatDateTime(localItem.last_study_at)}</div>
+                                <div>最后正确：{formatDateTime(localItem.last_correct_at)}</div>
+                                <div>最后错误：{formatDateTime(localItem.last_wrong_at)}</div>
                             </div>
                         </div>
                     )}

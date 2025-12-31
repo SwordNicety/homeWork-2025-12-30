@@ -161,6 +161,38 @@ export default function SectionDetailPage() {
         }
     }
 
+    // 清空所有学习记录
+    const handleClearAllStudyRecords = async () => {
+        if (!confirm('确定要清空本板块所有知识点的学习记录吗？\n此操作不可恢复！')) {
+            return
+        }
+
+        try {
+            const response = await fetch(`/api/knowledge/sections/${sectionId}/clear-study-records`, {
+                method: 'PUT'
+            })
+            const result = await response.json()
+            if (result.success) {
+                // 更新本地数据
+                setItems(prev => prev.map(item => ({
+                    ...item,
+                    correct_count: 0,
+                    wrong_count: 0,
+                    consecutive_correct: 0,
+                    consecutive_wrong: 0,
+                    last_study_at: undefined,
+                    last_correct_at: undefined,
+                    last_wrong_at: undefined
+                })))
+                alert('已清空所有学习记录')
+            } else {
+                alert('清空失败: ' + result.error)
+            }
+        } catch (error) {
+            alert('清空失败: ' + error)
+        }
+    }
+
     const getFilteredAndSortedItems = () => {
         let result = [...items]
 
@@ -276,6 +308,16 @@ export default function SectionDetailPage() {
                     </div>
 
                     <div className="flex-1" />
+
+                    <button
+                        onClick={handleClearAllStudyRecords}
+                        disabled={items.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-lg hover:from-orange-500 hover:to-amber-600 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="清空所有学习记录"
+                    >
+                        <RotateCcw size={20} />
+                        清空学习记录
+                    </button>
 
                     <button
                         onClick={() => {
