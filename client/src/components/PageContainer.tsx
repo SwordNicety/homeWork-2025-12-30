@@ -19,7 +19,7 @@ export default function PageContainer({
     children
 }: PageContainerProps) {
     return (
-        <div className="max-w-6xl mx-auto">
+        <div className="w-full h-full flex flex-col">
             {/* 页面标题区 */}
             <div className="mb-8 flex items-center gap-5">
                 <div className={cn(
@@ -37,7 +37,7 @@ export default function PageContainer({
             </div>
 
             {/* 页面内容区 */}
-            <div className="bg-white/70 backdrop-blur-sm rounded-3xl shadow-soft p-8 min-h-[400px]">
+            <div className="flex-1 bg-white/70 backdrop-blur-sm rounded-3xl shadow-soft p-8 overflow-auto">
                 {children || (
                     <div className="flex flex-col items-center justify-center h-64 text-gray-400">
                         <div className="text-6xl mb-4">🚧</div>

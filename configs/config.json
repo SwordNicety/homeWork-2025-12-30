@@ -14,5 +14,16 @@
     "ui": {
         "theme": "colorful",
         "fontSize": "large"
+    },
+    "membersConfig": {
+        "avatarSize": {
+            "width": 80,
+            "height": 80
+        },
+        "attributeImageSize": {
+            "width": 120,
+            "height": 120
+        },
+        "uploadPath": "uploadFiles/members"
     }
 }

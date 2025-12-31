@@ -1,9 +1,11 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
+import fastifyMultipart from '@fastify/multipart';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { initDatabase } from './db/index.js';
+import familyMembersRoutes from './routes/familyMembers.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,12 +18,30 @@ await fastify.register(cors, {
     origin: true
 });
 
+// 注册文件上传支持
+await fastify.register(fastifyMultipart, {
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB
+    }
+});
+
+// 上传文件静态访问
+const uploadPath = path.join(__dirname, '../../uploadFiles');
+await fastify.register(fastifyStatic, {
+    root: uploadPath,
+    prefix: '/uploadFiles/',
+    decorateReply: false
+});
+
 // 静态文件服务 - 生产环境下服务前端构建产物
 const clientDistPath = path.join(__dirname, '../../client/dist');
 await fastify.register(fastifyStatic, {
     root: clientDistPath,
     prefix: '/'
 });
+
+// 注册路由
+await fastify.register(familyMembersRoutes);
 
 // API 路由
 fastify.get('/api/health', async () => {
