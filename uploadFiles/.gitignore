@@ -1,0 +1,86 @@
+# 忽略上传的媒体文件
+# 图片格式
+*.png
+*.PNG
+*.jpg
+*.JPG
+*.jpeg
+*.JPEG
+*.gif
+*.GIF
+*.webp
+*.WEBP
+*.bmp
+*.BMP
+*.ico
+*.ICO
+*.svg
+*.SVG
+*.tiff
+*.TIFF
+
+# 视频格式
+*.mp4
+*.MP4
+*.mov
+*.MOV
+*.avi
+*.AVI
+*.mkv
+*.MKV
+*.wmv
+*.WMV
+*.flv
+*.FLV
+*.webm
+*.WEBM
+*.m4v
+*.M4V
+
+# 音频格式
+*.mp3
+*.MP3
+*.wav
+*.WAV
+*.flac
+*.FLAC
+*.aac
+*.AAC
+*.ogg
+*.OGG
+*.wma
+*.WMA
+
+# 文档格式
+*.xlsx
+*.XLSX
+*.xls
+*.XLS
+*.doc
+*.DOC
+*.docx
+*.DOCX
+*.pdf
+*.PDF
+*.ppt
+*.PPT
+*.pptx
+*.PPTX
+
+# 压缩包
+*.zip
+*.ZIP
+*.rar
+*.RAR
+*.7z
+*.7Z
+*.tar
+*.TAR
+*.gz
+*.GZ
+*.bz2
+*.BZ2
+
+# 保留目录结构的空文件
+!.gitkeep
+!**/.gitkeep

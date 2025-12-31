@@ -6,6 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { initDatabase } from './db/index.js';
 import familyMembersRoutes from './routes/familyMembers.js';
+import knowledgeRoutes from './routes/knowledge.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,6 +43,7 @@ await fastify.register(fastifyStatic, {
 
 // 注册路由
 await fastify.register(familyMembersRoutes);
+await fastify.register(knowledgeRoutes);
 
 // API 路由
 fastify.get('/api/health', async () => {

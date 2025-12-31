@@ -1,0 +1,14 @@
+# 忽略大型二进制工具文件
+darwin/ffmpeg
+darwin/ffprobe
+darwin/convert
+linux/ffmpeg
+linux/ffprobe
+linux/convert
+win32/ffmpeg.exe
+win32/ffprobe.exe
+win32/convert.exe
+
+# 保留目录结构
+!.gitkeep
+!**/.gitkeep

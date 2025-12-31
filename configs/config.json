@@ -25,5 +25,6 @@
             "height": 120
         },
         "uploadPath": "uploadFiles/members"
-    }
+    },
+    "knowledgeBaseConfig": {}
 }

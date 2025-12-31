@@ -1,4 +1,4 @@
-import { Users, UserPlus, Plus } from 'lucide-react'
+import { Users, UserPlus, Plus, Trash2, AlertTriangle } from 'lucide-react'
 import PageContainer from '@/components/PageContainer'
 import { useState, useEffect } from 'react'
 import AddMemberDialog from '@/components/AddMemberDialog'
@@ -37,6 +37,13 @@ interface AttributeValue {
     value_image?: string
 }
 
+// 移除确认对话框
+interface RemoveDialogState {
+    type: 'member' | 'attribute'
+    id: number
+    name: string
+}
+
 // 固定属性名称（对应成员表中的字段）
 const FIXED_ATTRIBUTES = [
     { key: 'avatar_path', label: '头像', type: 'image' as const },
@@ -55,6 +62,7 @@ export default function FamilyMembersPage() {
     const [attributeValues, setAttributeValues] = useState<AttributeValue[]>([])
     const [showAddMember, setShowAddMember] = useState(false)
     const [showAddAttribute, setShowAddAttribute] = useState(false)
+    const [removeDialog, setRemoveDialog] = useState<RemoveDialogState | null>(null)
     const [editingCell, setEditingCell] = useState<{
         memberId: number
         attributeId?: number
@@ -191,6 +199,42 @@ export default function FamilyMembersPage() {
         }
     }
 
+    // 删除成员
+    const deleteMember = async (id: number) => {
+        try {
+            const response = await fetch(`/api/family-members/${id}`, {
+                method: 'DELETE'
+            })
+            const result = await response.json()
+            if (result.success) {
+                await loadData()
+                setRemoveDialog(null)
+            } else {
+                alert('删除失败: ' + result.error)
+            }
+        } catch (error) {
+            alert('删除失败: ' + error)
+        }
+    }
+
+    // 删除属性
+    const deleteAttribute = async (id: number) => {
+        try {
+            const response = await fetch(`/api/member-attributes/${id}`, {
+                method: 'DELETE'
+            })
+            const result = await response.json()
+            if (result.success) {
+                await loadData()
+                setRemoveDialog(null)
+            } else {
+                alert('删除失败: ' + result.error)
+            }
+        } catch (error) {
+            alert('删除失败: ' + error)
+        }
+    }
+
     return (
         <PageContainer
             title="家庭成员"
@@ -235,7 +279,13 @@ export default function FamilyMembersPage() {
                                     {members.map(member => (
                                         <th
                                             key={member.id}
-                                            className="border border-gray-300 p-3 text-center font-semibold text-gray-700 min-w-[150px]"
+                                            className="border border-gray-300 p-3 text-center font-semibold text-gray-700 min-w-[150px] cursor-pointer hover:bg-pink-200 transition"
+                                            onDoubleClick={() => setRemoveDialog({
+                                                type: 'member',
+                                                id: member.id,
+                                                name: member.nickname
+                                            })}
+                                            title="双击管理此成员"
                                         >
                                             {member.nickname}
                                         </th>
@@ -271,11 +321,21 @@ export default function FamilyMembersPage() {
                                 {/* 动态属性行 */}
                                 {attributes.map(attr => (
                                     <tr key={attr.id} className="hover:bg-gray-50 transition">
-                                        <td className="border border-gray-300 p-3 font-medium text-gray-700 bg-pink-50 flex items-center gap-2">
-                                            {attr.attribute_logo && (
-                                                <img src={`/${attr.attribute_logo}`} alt="" className="w-6 h-6 rounded" />
-                                            )}
-                                            {attr.attribute_name}
+                                        <td
+                                            className="border border-gray-300 p-3 font-medium text-gray-700 bg-pink-50 cursor-pointer hover:bg-pink-200 transition"
+                                            onDoubleClick={() => setRemoveDialog({
+                                                type: 'attribute',
+                                                id: attr.id,
+                                                name: attr.attribute_name
+                                            })}
+                                            title="双击管理此属性"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                {attr.attribute_logo && (
+                                                    <img src={`/${attr.attribute_logo}`} alt="" className="w-6 h-6 rounded" />
+                                                )}
+                                                {attr.attribute_name}
+                                            </div>
                                         </td>
                                         {members.map(member => {
                                             const attrValue = getAttributeValue(member.id, attr.id)
@@ -350,6 +410,54 @@ export default function FamilyMembersPage() {
                     imageSize={{ width: 120, height: 120 }}
                     uploadType={editingCell.attributeKey === 'avatar_path' ? 'avatar' : 'attribute'}
                 />
+            )}
+
+            {/* 移除确认对话框 */}
+            {removeDialog && (
+                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onClick={() => setRemoveDialog(null)}>
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        <div className="bg-gradient-to-r from-red-500 to-rose-500 text-white p-6">
+                            <div className="flex items-center gap-3">
+                                <AlertTriangle size={28} />
+                                <h2 className="text-xl font-bold">
+                                    管理{removeDialog.type === 'member' ? '成员' : '属性'}
+                                </h2>
+                            </div>
+                        </div>
+                        <div className="p-6">
+                            <div className="mb-6 text-center">
+                                <div className="text-2xl font-bold text-gray-800 mb-2">「{removeDialog.name}」</div>
+                                <p className="text-gray-500">
+                                    {removeDialog.type === 'member'
+                                        ? '确定要删除这个成员吗？该成员的所有属性值也会被删除。'
+                                        : '确定要删除这个属性吗？所有成员的该属性值都会被删除。'
+                                    }
+                                </p>
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setRemoveDialog(null)}
+                                    className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-medium"
+                                >
+                                    取消
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (removeDialog.type === 'member') {
+                                            deleteMember(removeDialog.id)
+                                        } else {
+                                            deleteAttribute(removeDialog.id)
+                                        }
+                                    }}
+                                    className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl hover:from-red-600 hover:to-rose-600 transition font-medium flex items-center justify-center gap-2"
+                                >
+                                    <Trash2 size={18} />
+                                    移除条目
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </PageContainer>
     )

@@ -3,6 +3,7 @@ import { getDatabase } from '../db/index.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { compressImageBuffer, isImageFile } from '../utils/imageCompress.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -293,8 +294,11 @@ export default async function familyMembersRoutes(fastify: FastifyInstance) {
             const filename = `avatar_${timestamp}_${Math.random().toString(36).substring(7)}${extname}`;
             const filepath = path.join(uploadDir, filename);
 
-            // 保存文件
-            const buffer = await data.toBuffer();
+            // 读取并压缩图片
+            let buffer = await data.toBuffer();
+            if (isImageFile(data.filename)) {
+                buffer = await compressImageBuffer(buffer, data.filename, { quality: 70 });
+            }
             fs.writeFileSync(filepath, buffer);
 
             const relativePath = `uploadFiles/members/avatars/${filename}`;
@@ -325,8 +329,11 @@ export default async function familyMembersRoutes(fastify: FastifyInstance) {
             const filename = `logo_${timestamp}_${Math.random().toString(36).substring(7)}${extname}`;
             const filepath = path.join(uploadDir, filename);
 
-            // 保存文件
-            const buffer = await data.toBuffer();
+            // 读取并压缩图片
+            let buffer = await data.toBuffer();
+            if (isImageFile(data.filename)) {
+                buffer = await compressImageBuffer(buffer, data.filename, { quality: 70 });
+            }
             fs.writeFileSync(filepath, buffer);
 
             const relativePath = `uploadFiles/members/logos/${filename}`;
@@ -357,8 +364,11 @@ export default async function familyMembersRoutes(fastify: FastifyInstance) {
             const filename = `attr_${timestamp}_${Math.random().toString(36).substring(7)}${extname}`;
             const filepath = path.join(uploadDir, filename);
 
-            // 保存文件
-            const buffer = await data.toBuffer();
+            // 读取并压缩图片
+            let buffer = await data.toBuffer();
+            if (isImageFile(data.filename)) {
+                buffer = await compressImageBuffer(buffer, data.filename, { quality: 70 });
+            }
             fs.writeFileSync(filepath, buffer);
 
             const relativePath = `uploadFiles/members/attributes/${filename}`;

@@ -83,18 +83,77 @@ CREATE TABLE IF NOT EXISTS todo_tasks (
   FOREIGN KEY (assigned_to) REFERENCES family_members(id)
 );
 
--- 知识库表
-CREATE TABLE IF NOT EXISTS knowledge_base (
+-- 知识库表（一级板块）
+CREATE TABLE IF NOT EXISTS knowledge_categories (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT NOT NULL,
-  content TEXT,
-  category TEXT,
-  file_path TEXT,
-  created_by INTEGER,
+  name TEXT NOT NULL,                               -- 知识库名
+  description TEXT,                                 -- 知识库备注
+  logo_path TEXT,                                   -- 知识库Logo
+  color TEXT DEFAULT '#3B82F6',                     -- 板块颜色
+  sort_weight INTEGER DEFAULT 0,                    -- 排序权重
+  dir_name TEXT NOT NULL,                           -- 文件目录名
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 知识库二级板块表
+CREATE TABLE IF NOT EXISTS knowledge_sections (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  category_id INTEGER NOT NULL,                     -- 所属一级板块ID
+  name TEXT NOT NULL,                               -- 板块名
+  description TEXT,                                 -- 板块备注
+  logo_path TEXT,                                   -- Logo路径
+  color TEXT DEFAULT '#8B5CF6',                     -- 板块颜色
+  sort_weight INTEGER DEFAULT 0,                    -- 排序权重
+  dir_name TEXT NOT NULL,                           -- 文件目录名
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (created_by) REFERENCES family_members(id)
+  FOREIGN KEY (category_id) REFERENCES knowledge_categories(id) ON DELETE CASCADE
 );
+
+-- 知识条目表
+CREATE TABLE IF NOT EXISTS knowledge_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  section_id INTEGER NOT NULL,                      -- 所属二级板块ID
+  name TEXT NOT NULL,                               -- 知识名
+  keywords TEXT,                                    -- 知识关键字
+  brief_note TEXT,                                  -- 知识简注
+  summary TEXT,                                     -- 知识简介
+  detail TEXT,                                      -- 知识详情
+  sort_weight INTEGER DEFAULT 0,                    -- 排序权重
+  -- 媒体资源（JSON数组格式存储路径）
+  audio_paths TEXT,                                 -- 音频路径列表
+  image_paths TEXT,                                 -- 图片路径列表
+  video_paths TEXT,                                 -- 视频路径列表
+  -- 学习统计
+  correct_count INTEGER DEFAULT 0,                  -- 正确次数
+  wrong_count INTEGER DEFAULT 0,                    -- 错误次数
+  consecutive_correct INTEGER DEFAULT 0,            -- 连续正确次数
+  consecutive_wrong INTEGER DEFAULT 0,              -- 连续错误次数
+  last_study_at DATETIME,                           -- 最后学习时间
+  last_correct_at DATETIME,                         -- 最后正确时间
+  last_wrong_at DATETIME,                           -- 最后错误时间
+  -- 时间戳
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (section_id) REFERENCES knowledge_sections(id) ON DELETE CASCADE
+);
+
+-- 创建知识库相关索引
+CREATE INDEX IF NOT EXISTS idx_knowledge_sections_category 
+ON knowledge_sections(category_id);
+
+CREATE INDEX IF NOT EXISTS idx_knowledge_items_section 
+ON knowledge_items(section_id);
+
+CREATE INDEX IF NOT EXISTS idx_knowledge_categories_sort 
+ON knowledge_categories(sort_weight);
+
+CREATE INDEX IF NOT EXISTS idx_knowledge_sections_sort 
+ON knowledge_sections(sort_weight);
+
+CREATE INDEX IF NOT EXISTS idx_knowledge_items_sort 
+ON knowledge_items(sort_weight);
 
 -- 日记表
 CREATE TABLE IF NOT EXISTS diaries (
