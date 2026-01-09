@@ -1,8 +1,8 @@
 {
-    "name": "英语",
-    "description": "英语学习知识库",
-    "color": "#3B82F6",
-    "sort_weight": 1,
-    "created_at": "2025-01-01T00:00:00.000Z",
-    "updated_at": "2025-01-01T00:00:00.000Z"
+  "name": "英语",
+  "description": "英语学习知识库",
+  "color": "#3B82F6",
+  "sort_weight": 2,
+  "created_at": "2025-01-01T00:00:00.000Z",
+  "updated_at": "2026-01-09T14:53:48.090Z"
 }
