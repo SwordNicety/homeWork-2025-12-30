@@ -1,0 +1,17 @@
+{
+    "name": "a",
+    "keywords": "a",
+    "brief_note": "拼音:a 汉字数：7 汉字列表：阿啊呵腌嗄吖锕",
+    "summary": "",
+    "detail": "## a\n* 阿 (ā,ē) \n* 啊 (ā,á,ǎ,à,a) \n* 呵 (hē,a,kē) \n* 腌 (ā,yān) \n* 嗄 (shà,á) \n* 吖 (yā,ā) \n* 锕 (ā) \n",
+    "sort_weight": 0,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}

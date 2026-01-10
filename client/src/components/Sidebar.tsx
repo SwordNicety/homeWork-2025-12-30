@@ -113,7 +113,7 @@ export default function Sidebar() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                            我的小家
+                            木木的家
                         </h1>
                         <p className="text-sm text-gray-500">家庭助手</p>
                     </div>

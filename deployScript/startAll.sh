@@ -259,7 +259,7 @@ show_success_message() {
 main() {
     echo ""
     echo -e "${MAGENTA}╔════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${MAGENTA}║          ${BOLD}🏠 我的小家 - 服务启动脚本${NC}${MAGENTA}                       ║${NC}"
+    echo -e "${MAGENTA}║          ${BOLD}🏠 木木的家 - 服务启动脚本${NC}${MAGENTA}                       ║${NC}"
     echo -e "${MAGENTA}║                    版本: 1.0.0                             ║${NC}"
     echo -e "${MAGENTA}╚════════════════════════════════════════════════════════════╝${NC}"
     echo ""

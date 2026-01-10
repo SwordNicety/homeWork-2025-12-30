@@ -153,5 +153,5 @@ CREATE TABLE IF NOT EXISTS growth_tracks (
 -- 初始配置数据
 INSERT INTO app_config (config_key, config_value, description) VALUES 
   ('app_version', '1.0.0', '应用版本'),
-  ('app_name', '我的小家', '应用名称'),
+  ('app_name', '木木的家', '应用名称'),
   ('theme', 'light', '主题模式');
