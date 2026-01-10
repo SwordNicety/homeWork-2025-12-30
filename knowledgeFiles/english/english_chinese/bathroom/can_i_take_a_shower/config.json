@@ -1,0 +1,17 @@
+{
+    "name": "Can I take a shower?",
+    "keywords": "Can I take a shower?",
+    "brief_note": "我可以洗澡吗？",
+    "summary": "",
+    "detail": "### English: Can I take a shower?\n### Chinese: 我可以洗澡吗？",
+    "sort_weight": 12,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}

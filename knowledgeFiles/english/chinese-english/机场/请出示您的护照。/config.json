@@ -1,0 +1,17 @@
+{
+    "name": "请出示您的护照。",
+    "keywords": "请出示您的护照。",
+    "brief_note": "Please show me your passport.",
+    "summary": "",
+    "detail": "### English: Please show me your passport.\n### Chinese: 请出示您的护照。",
+    "sort_weight": 14,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}

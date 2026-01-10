@@ -1,0 +1,17 @@
+{
+    "name": "今天星期几？",
+    "keywords": "今天星期几？",
+    "brief_note": "What day is it today?",
+    "summary": "",
+    "detail": "### English: What day is it today?\n### Chinese: 今天星期几？",
+    "sort_weight": 19,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}

@@ -1,0 +1,17 @@
+{
+    "name": "我正在用键盘打字。",
+    "keywords": "我正在用键盘打字。",
+    "brief_note": "I’m typing on the keyboard.",
+    "summary": "",
+    "detail": "### English: I’m typing on the keyboard.\n### Chinese: 我正在用键盘打字。",
+    "sort_weight": 16,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}

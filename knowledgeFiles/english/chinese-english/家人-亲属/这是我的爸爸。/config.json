@@ -1,0 +1,17 @@
+{
+    "name": "这是我的爸爸。",
+    "keywords": "这是我的爸爸。",
+    "brief_note": "This is my father.",
+    "summary": "",
+    "detail": "### English: This is my father.\n### Chinese: 这是我的爸爸。",
+    "sort_weight": 11,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}

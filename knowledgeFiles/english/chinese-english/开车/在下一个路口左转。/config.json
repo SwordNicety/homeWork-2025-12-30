@@ -1,0 +1,17 @@
+{
+    "name": "在下一个路口左转。",
+    "keywords": "在下一个路口左转。",
+    "brief_note": "Turn left at the next intersection.",
+    "summary": "",
+    "detail": "### English: Turn left at the next intersection.\n### Chinese: 在下一个路口左转。",
+    "sort_weight": 13,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}

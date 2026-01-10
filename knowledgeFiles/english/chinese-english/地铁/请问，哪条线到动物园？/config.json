@@ -1,0 +1,17 @@
+{
+    "name": "请问，哪条线到动物园？",
+    "keywords": "请问，哪条线到动物园？",
+    "brief_note": "Excuse me, which line goes to the zoo?",
+    "summary": "",
+    "detail": "### English: Excuse me, which line goes to the zoo?\n### Chinese: 请问，哪条线到动物园？",
+    "sort_weight": 11,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}

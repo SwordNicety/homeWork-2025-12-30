@@ -1,0 +1,17 @@
+{
+    "name": "医生现在可以见您了。",
+    "keywords": "医生现在可以见您了。",
+    "brief_note": "The doctor will see you now.",
+    "summary": "",
+    "detail": "### English: The doctor will see you now.\n### Chinese: 医生现在可以见您了。",
+    "sort_weight": 18,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}

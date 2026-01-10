@@ -1,0 +1,17 @@
+{
+    "name": "我需要一些感冒药。",
+    "keywords": "我需要一些感冒药。",
+    "brief_note": "I need some medicine for a cold.",
+    "summary": "",
+    "detail": "### English: I need some medicine for a cold.\n### Chinese: 我需要一些感冒药。",
+    "sort_weight": 11,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}

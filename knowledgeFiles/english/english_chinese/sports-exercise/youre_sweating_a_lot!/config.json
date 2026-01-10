@@ -1,0 +1,17 @@
+{
+    "name": "You're sweating a lot!",
+    "keywords": "You're sweating a lot!",
+    "brief_note": "你出了好多汗啊！",
+    "summary": "",
+    "detail": "### English: You're sweating a lot!\n### Chinese: 你出了好多汗啊！",
+    "sort_weight": 17,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}

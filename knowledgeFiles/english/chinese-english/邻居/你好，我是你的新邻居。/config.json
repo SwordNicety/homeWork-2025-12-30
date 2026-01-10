@@ -1,0 +1,17 @@
+{
+    "name": "你好，我是你的新邻居。",
+    "keywords": "你好，我是你的新邻居。",
+    "brief_note": "Hi, I’m your new neighbor.",
+    "summary": "",
+    "detail": "### English: Hi, I’m your new neighbor.\n### Chinese: 你好，我是你的新邻居。",
+    "sort_weight": 11,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}

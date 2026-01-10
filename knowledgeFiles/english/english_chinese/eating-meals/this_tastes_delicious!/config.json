@@ -1,0 +1,17 @@
+{
+    "name": "This tastes delicious!",
+    "keywords": "This tastes delicious!",
+    "brief_note": "这个很好吃！",
+    "summary": "",
+    "detail": "### English: This tastes delicious!\n### Chinese: 这个很好吃！",
+    "sort_weight": 14,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}

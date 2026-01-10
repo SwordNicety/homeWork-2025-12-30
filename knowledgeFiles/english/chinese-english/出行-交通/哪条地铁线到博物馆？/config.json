@@ -1,0 +1,17 @@
+{
+    "name": "哪条地铁线到博物馆？",
+    "keywords": "哪条地铁线到博物馆？",
+    "brief_note": "Which subway line goes to the museum?",
+    "summary": "",
+    "detail": "### English: Which subway line goes to the museum?\n### Chinese: 哪条地铁线到博物馆？",
+    "sort_weight": 13,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}

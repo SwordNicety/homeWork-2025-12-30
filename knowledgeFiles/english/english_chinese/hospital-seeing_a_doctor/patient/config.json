@@ -1,0 +1,17 @@
+{
+    "name": "patient",
+    "keywords": "patient",
+    "brief_note": "病人",
+    "summary": "",
+    "detail": "### English: patient\n### Chinese: 病人",
+    "sort_weight": 4,
+    "audio_files": [],
+    "image_files": [],
+    "video_files": [],
+    "correct_count": 0,
+    "wrong_count": 0,
+    "consecutive_correct": 0,
+    "consecutive_wrong": 0,
+    "created_at": "2026-01-09T12:10:46.662Z",
+    "updated_at": "2026-01-09T12:10:46.662Z"
+}
