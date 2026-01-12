@@ -32,3 +32,4 @@ Thumbs.db
 .env.local
 .env.*.local
 logs/server.pid
+logs/server.pid
