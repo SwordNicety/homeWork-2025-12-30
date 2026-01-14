@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import familyMembersRoutes from './routes/familyMembers.js';
 import knowledgeRoutes from './routes/knowledge.js';
 import diaryRoutes from './routes/diary.js';
+import theaterRoutes from './routes/theater.js';
 import { initializeIndex } from './utils/knowledgeIndexManager.js';
 import { initFileDB } from './utils/familyMembersFileManager.js';
 
@@ -52,6 +53,14 @@ await fastify.register(fastifyStatic, {
     decorateReply: false
 });
 
+// 视频中心文件静态访问
+const videoCenterPath = path.join(__dirname, '../../videoCenter');
+await fastify.register(fastifyStatic, {
+    root: videoCenterPath,
+    prefix: '/videoCenter/',
+    decorateReply: false
+});
+
 // 静态文件服务 - 生产环境下服务前端构建产物
 const clientDistPath = path.join(__dirname, '../../client/dist');
 await fastify.register(fastifyStatic, {
@@ -63,6 +72,7 @@ await fastify.register(fastifyStatic, {
 await fastify.register(familyMembersRoutes);
 await fastify.register(knowledgeRoutes);
 await fastify.register(diaryRoutes);
+await fastify.register(theaterRoutes);
 
 // API 路由
 fastify.get('/api/health', async () => {
