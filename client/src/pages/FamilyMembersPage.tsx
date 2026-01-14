@@ -1,4 +1,4 @@
-import { Users, UserPlus, Plus, Trash2, AlertTriangle } from 'lucide-react'
+import { Users, UserPlus, Plus, Trash2, AlertTriangle, Minus } from 'lucide-react'
 import PageContainer from '@/components/PageContainer'
 import { useState, useEffect } from 'react'
 import AddMemberDialog from '@/components/AddMemberDialog'
@@ -69,6 +69,11 @@ export default function FamilyMembersPage() {
         attributeKey?: string
         type: string
         currentValue: any
+    } | null>(null)
+    const [hoveringCell, setHoveringCell] = useState<{
+        memberId: number
+        attributeId?: number
+        attributeKey?: string
     } | null>(null)
 
     const loadData = async () => {
@@ -170,8 +175,61 @@ export default function FamilyMembersPage() {
         }
     }
 
+    // 快捷增减数值
+    const quickAdjustValue = async (
+        memberId: number,
+        attributeId: number | undefined,
+        attributeKey: string | undefined,
+        type: string,
+        currentValue: number | null,
+        delta: number
+    ) => {
+        const newValue = (currentValue || 0) + delta
+        // 对于小数类型，保留一位小数
+        const finalValue = type === 'decimal' ? Math.round(newValue * 10) / 10 : newValue
+
+        if (attributeKey) {
+            await saveFixedValue(memberId, attributeKey, finalValue)
+        } else if (attributeId) {
+            await saveAttributeValue(memberId, attributeId, type, finalValue)
+        }
+    }
+
+    // 计算某行数值属性的最大最小值
+    const getRowMinMax = (attrId: number, type: string): { min: number | null; max: number | null } => {
+        if (type !== 'integer' && type !== 'decimal') return { min: null, max: null }
+
+        const values = members.map(member => {
+            const attrValue = getAttributeValue(member.id, attrId)
+            return attrValue?.value_number ?? null
+        }).filter(v => v !== null) as number[]
+
+        if (values.length === 0) return { min: null, max: null }
+        return { min: Math.min(...values), max: Math.max(...values) }
+    }
+
+    // 计算固定属性行的最大最小值
+    const getFixedRowMinMax = (key: string, type: string): { min: number | null; max: number | null } => {
+        if (type !== 'integer' && type !== 'decimal') return { min: null, max: null }
+
+        const values = members.map(member => {
+            const val = getFixedValue(member, key)
+            return typeof val === 'number' ? val : null
+        }).filter(v => v !== null) as number[]
+
+        if (values.length === 0) return { min: null, max: null }
+        return { min: Math.min(...values), max: Math.max(...values) }
+    }
+
     // 渲染单元格内容
-    const renderCellContent = (type: string, value: any) => {
+    const renderCellContent = (
+        type: string,
+        value: any,
+        isHighest?: boolean,
+        isLowest?: boolean,
+        showQuickAdjust?: boolean,
+        onAdjust?: (delta: number) => void
+    ) => {
         if (type === 'image') {
             if (!value) {
                 return <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">未设置</div>
@@ -194,9 +252,41 @@ export default function FamilyMembersPage() {
                     />
                 </div>
             )
+        } else if (type === 'integer' || type === 'decimal') {
+            // 数值类型：放大字号、加粗
+            return (
+                <div className="flex items-center justify-center gap-1 relative">
+                    <div className="text-lg font-bold text-gray-800">{value ?? '-'}</div>
+                    {/* 快捷增减按钮 */}
+                    {showQuickAdjust && onAdjust && (
+                        <div className="absolute right-0 flex flex-col gap-0.5">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onAdjust(type === 'decimal' ? 0.1 : 1) }}
+                                className="w-6 h-6 bg-green-500 hover:bg-green-600 text-white rounded flex items-center justify-center text-sm font-bold shadow"
+                            >
+                                <Plus size={14} />
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onAdjust(type === 'decimal' ? -0.1 : -1) }}
+                                className="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded flex items-center justify-center text-sm font-bold shadow"
+                            >
+                                <Minus size={14} />
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )
         } else {
-            return <div className="px-2 py-1 text-sm">{value || '-'}</div>
+            return <div className="px-2 py-1 text-sm text-center">{value || '-'}</div>
         }
+    }
+
+    // 获取单元格背景色
+    const getCellBgClass = (value: number | null, min: number | null, max: number | null): string => {
+        if (value === null || min === null || max === null || min === max) return ''
+        if (value === max) return 'bg-orange-100'
+        if (value === min) return 'bg-blue-100'
+        return ''
     }
 
     // 删除成员
@@ -268,18 +358,20 @@ export default function FamilyMembersPage() {
                     <p className="text-lg">还没有添加家庭成员，点击右上角"添加成员"开始吧！</p>
                 </div>
             ) : (
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div className="overflow-x-auto">
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col">
+                    {/* 固定表头区域：昵称行 + 头像行 */}
+                    <div className="flex-shrink-0 overflow-x-auto border-b-2 border-pink-200">
                         <table className="w-full border-collapse">
-                            <thead className="sticky top-0 bg-gradient-to-r from-pink-100 to-rose-100 z-10">
+                            <thead className="bg-gradient-to-r from-pink-100 to-rose-100">
+                                {/* 昵称行 */}
                                 <tr>
-                                    <th className="border border-gray-300 p-3 text-left font-semibold text-gray-700 bg-pink-50">
-                                        属性
+                                    <th className="border border-gray-300 p-3 text-center font-semibold text-gray-700 bg-pink-50 min-w-[120px]">
+                                        成员
                                     </th>
                                     {members.map(member => (
                                         <th
                                             key={member.id}
-                                            className="border border-gray-300 p-3 text-center font-semibold text-gray-700 min-w-[150px] cursor-pointer hover:bg-pink-200 transition"
+                                            className="border border-gray-300 p-3 text-center font-bold text-gray-800 min-w-[150px] cursor-pointer hover:bg-pink-200 transition text-lg"
                                             onDoubleClick={() => setRemoveDialog({
                                                 type: 'member',
                                                 id: member.id,
@@ -291,85 +383,162 @@ export default function FamilyMembersPage() {
                                         </th>
                                     ))}
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {/* 固定属性行 */}
-                                {FIXED_ATTRIBUTES.map(attr => (
-                                    <tr key={attr.key} className="hover:bg-gray-50 transition">
-                                        <td className="border border-gray-300 p-3 font-medium text-gray-700 bg-pink-50">
-                                            {attr.label}
+                                {/* 头像行 */}
+                                <tr>
+                                    <td className="border border-gray-300 p-3 text-center font-medium text-gray-700 bg-pink-50">
+                                        头像
+                                    </td>
+                                    {members.map(member => (
+                                        <td
+                                            key={member.id}
+                                            className="border border-gray-300 p-3 text-center cursor-pointer hover:bg-blue-50 transition"
+                                            onDoubleClick={() => {
+                                                setEditingCell({
+                                                    memberId: member.id,
+                                                    attributeKey: 'avatar_path',
+                                                    type: 'image',
+                                                    currentValue: member.avatar_path
+                                                })
+                                            }}
+                                        >
+                                            {member.avatar_path ? (
+                                                <img
+                                                    src={`/${member.avatar_path}`}
+                                                    alt=""
+                                                    className="w-20 h-20 rounded-lg object-cover mx-auto"
+                                                />
+                                            ) : (
+                                                <div className="w-20 h-20 rounded-lg bg-gray-100 flex items-center justify-center mx-auto text-gray-400 text-sm">
+                                                    未设置
+                                                </div>
+                                            )}
                                         </td>
-                                        {members.map(member => (
-                                            <td
-                                                key={member.id}
-                                                className="border border-gray-300 p-3 text-center cursor-pointer hover:bg-blue-50 transition"
-                                                onDoubleClick={() => {
-                                                    setEditingCell({
-                                                        memberId: member.id,
-                                                        attributeKey: attr.key,
-                                                        type: attr.type,
-                                                        currentValue: getFixedValue(member, attr.key)
-                                                    })
-                                                }}
-                                            >
-                                                {renderCellContent(attr.type, getFixedValue(member, attr.key))}
+                                    ))}
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+
+                    {/* 可滚动的属性区域 */}
+                    <div className="flex-1 overflow-auto" style={{ maxHeight: 'calc(100vh - 420px)' }}>
+                        <table className="w-full border-collapse">
+                            <tbody>
+                                {/* 固定属性行（排除头像） */}
+                                {FIXED_ATTRIBUTES.filter(attr => attr.key !== 'avatar_path').map(attr => {
+                                    const { min, max } = getFixedRowMinMax(attr.key, attr.type)
+                                    return (
+                                        <tr key={attr.key} className="hover:bg-gray-50 transition">
+                                            <td className="border border-gray-300 p-3 text-center font-medium text-gray-700 bg-pink-50 min-w-[120px]">
+                                                {attr.label}
                                             </td>
-                                        ))}
-                                    </tr>
-                                ))}
+                                            {members.map(member => {
+                                                const value = getFixedValue(member, attr.key)
+                                                const numValue = typeof value === 'number' ? value : null
+                                                const isHighest = numValue !== null && numValue === max && min !== max
+                                                const isLowest = numValue !== null && numValue === min && min !== max
+                                                const isHovering = hoveringCell?.memberId === member.id && hoveringCell?.attributeKey === attr.key
+                                                const isNumericType = attr.type === 'integer'
+
+                                                return (
+                                                    <td
+                                                        key={member.id}
+                                                        className={`border border-gray-300 p-3 text-center cursor-pointer hover:bg-blue-50 transition min-w-[150px] ${getCellBgClass(numValue, min, max)}`}
+                                                        onDoubleClick={() => {
+                                                            setEditingCell({
+                                                                memberId: member.id,
+                                                                attributeKey: attr.key,
+                                                                type: attr.type,
+                                                                currentValue: value
+                                                            })
+                                                        }}
+                                                        onMouseEnter={() => isNumericType && setHoveringCell({ memberId: member.id, attributeKey: attr.key })}
+                                                        onMouseLeave={() => setHoveringCell(null)}
+                                                    >
+                                                        {renderCellContent(
+                                                            attr.type,
+                                                            value,
+                                                            isHighest,
+                                                            isLowest,
+                                                            isHovering,
+                                                            (delta) => quickAdjustValue(member.id, undefined, attr.key, attr.type, numValue, delta)
+                                                        )}
+                                                    </td>
+                                                )
+                                            })}
+                                        </tr>
+                                    )
+                                })}
 
                                 {/* 动态属性行 */}
-                                {attributes.map(attr => (
-                                    <tr key={attr.id} className="hover:bg-gray-50 transition">
-                                        <td
-                                            className="border border-gray-300 p-3 font-medium text-gray-700 bg-pink-50 cursor-pointer hover:bg-pink-200 transition"
-                                            onDoubleClick={() => setRemoveDialog({
-                                                type: 'attribute',
-                                                id: attr.id,
-                                                name: attr.attribute_name
+                                {attributes.map(attr => {
+                                    const { min, max } = getRowMinMax(attr.id, attr.attribute_type)
+                                    return (
+                                        <tr key={attr.id} className="hover:bg-gray-50 transition">
+                                            <td
+                                                className="border border-gray-300 p-3 text-center font-medium text-gray-700 bg-pink-50 cursor-pointer hover:bg-pink-200 transition min-w-[120px]"
+                                                onDoubleClick={() => setRemoveDialog({
+                                                    type: 'attribute',
+                                                    id: attr.id,
+                                                    name: attr.attribute_name
+                                                })}
+                                                title="双击管理此属性"
+                                            >
+                                                <div className="flex items-center justify-center gap-2">
+                                                    {attr.attribute_logo && (
+                                                        <img src={`/${attr.attribute_logo}`} alt="" className="w-6 h-6 rounded" />
+                                                    )}
+                                                    {attr.attribute_name}
+                                                </div>
+                                            </td>
+                                            {members.map(member => {
+                                                const attrValue = getAttributeValue(member.id, attr.id)
+                                                let displayValue: any = null
+
+                                                if (attr.attribute_type === 'integer' || attr.attribute_type === 'decimal') {
+                                                    displayValue = attrValue?.value_number ?? null
+                                                } else if (attr.attribute_type === 'checkbox') {
+                                                    displayValue = attrValue?.value_boolean
+                                                } else if (attr.attribute_type === 'image') {
+                                                    displayValue = attrValue?.value_image
+                                                } else {
+                                                    displayValue = attrValue?.value_text
+                                                }
+
+                                                const numValue = (attr.attribute_type === 'integer' || attr.attribute_type === 'decimal') ? displayValue : null
+                                                const isHighest = numValue !== null && numValue === max && min !== max
+                                                const isLowest = numValue !== null && numValue === min && min !== max
+                                                const isHovering = hoveringCell?.memberId === member.id && hoveringCell?.attributeId === attr.id
+                                                const isNumericType = attr.attribute_type === 'integer' || attr.attribute_type === 'decimal'
+
+                                                return (
+                                                    <td
+                                                        key={member.id}
+                                                        className={`border border-gray-300 p-3 text-center cursor-pointer hover:bg-blue-50 transition min-w-[150px] ${getCellBgClass(numValue, min, max)}`}
+                                                        onDoubleClick={() => {
+                                                            setEditingCell({
+                                                                memberId: member.id,
+                                                                attributeId: attr.id,
+                                                                type: attr.attribute_type,
+                                                                currentValue: displayValue
+                                                            })
+                                                        }}
+                                                        onMouseEnter={() => isNumericType && setHoveringCell({ memberId: member.id, attributeId: attr.id })}
+                                                        onMouseLeave={() => setHoveringCell(null)}
+                                                    >
+                                                        {renderCellContent(
+                                                            attr.attribute_type,
+                                                            displayValue,
+                                                            isHighest,
+                                                            isLowest,
+                                                            isHovering,
+                                                            (delta) => quickAdjustValue(member.id, attr.id, undefined, attr.attribute_type, numValue, delta)
+                                                        )}
+                                                    </td>
+                                                )
                                             })}
-                                            title="双击管理此属性"
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                {attr.attribute_logo && (
-                                                    <img src={`/${attr.attribute_logo}`} alt="" className="w-6 h-6 rounded" />
-                                                )}
-                                                {attr.attribute_name}
-                                            </div>
-                                        </td>
-                                        {members.map(member => {
-                                            const attrValue = getAttributeValue(member.id, attr.id)
-                                            let displayValue = null
-
-                                            if (attr.attribute_type === 'integer' || attr.attribute_type === 'decimal') {
-                                                displayValue = attrValue?.value_number
-                                            } else if (attr.attribute_type === 'checkbox') {
-                                                displayValue = attrValue?.value_boolean
-                                            } else if (attr.attribute_type === 'image') {
-                                                displayValue = attrValue?.value_image
-                                            } else {
-                                                displayValue = attrValue?.value_text
-                                            }
-
-                                            return (
-                                                <td
-                                                    key={member.id}
-                                                    className="border border-gray-300 p-3 text-center cursor-pointer hover:bg-blue-50 transition"
-                                                    onDoubleClick={() => {
-                                                        setEditingCell({
-                                                            memberId: member.id,
-                                                            attributeId: attr.id,
-                                                            type: attr.attribute_type,
-                                                            currentValue: displayValue
-                                                        })
-                                                    }}
-                                                >
-                                                    {renderCellContent(attr.attribute_type, displayValue)}
-                                                </td>
-                                            )
-                                        })}
-                                    </tr>
-                                ))}
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         </table>
                     </div>

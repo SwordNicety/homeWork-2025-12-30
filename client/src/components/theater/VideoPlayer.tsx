@@ -88,15 +88,25 @@ export default function VideoPlayer({
         if (video && initialPosition > 0) {
             video.currentTime = initialPosition
         }
-    }, [initialPosition])
+    }, [initialPosition, videoUrl])
 
-    // 自动播放
+    // 自动播放 - 当视频URL变化时也触发
     useEffect(() => {
         const video = videoRef.current
         if (video && autoPlay) {
-            video.play().catch(console.error)
+            // 等待视频加载后再播放
+            const playVideo = () => {
+                video.play().catch(console.error)
+            }
+            // 如果视频已经可以播放，直接播放
+            if (video.readyState >= 3) {
+                playVideo()
+            } else {
+                // 否则等待 canplay 事件
+                video.addEventListener('canplay', playVideo, { once: true })
+            }
         }
-    }, [autoPlay])
+    }, [autoPlay, videoUrl])
 
     // 键盘控制
     useEffect(() => {

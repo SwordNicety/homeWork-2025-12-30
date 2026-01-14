@@ -45,7 +45,17 @@
       "sort_weight": 0,
       "created_at": "2026-01-14T15:37:24.404Z",
       "updated_at": "2026-01-14T15:37:24.404Z"
+    },
+    {
+      "id": "6",
+      "attribute_name": "11231",
+      "attribute_type": "string",
+      "options": "",
+      "attribute_logo": "",
+      "sort_weight": 0,
+      "created_at": "2026-01-14T16:07:41.379Z",
+      "updated_at": "2026-01-14T16:07:41.379Z"
     }
   ],
-  "last_definition_id": 5
+  "last_definition_id": 6
 }

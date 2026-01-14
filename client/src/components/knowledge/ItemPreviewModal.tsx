@@ -23,11 +23,14 @@ interface KnowledgeItem {
 
 interface ItemPreviewModalProps {
     item: KnowledgeItem
+    items?: KnowledgeItem[] // 所有知识点列表，用于上下切换
+    currentIndex?: number // 当前知识点在列表中的索引
     onClose: () => void
     onEdit?: () => void
+    onNavigate?: (index: number) => void // 切换知识点回调
 }
 
-export default function ItemPreviewModal({ item, onClose, onEdit }: ItemPreviewModalProps) {
+export default function ItemPreviewModal({ item, items, currentIndex, onClose, onEdit, onNavigate }: ItemPreviewModalProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
     const audioRef = useRef<HTMLAudioElement>(null)
     const videoRef = useRef<HTMLVideoElement>(null)
@@ -44,6 +47,22 @@ export default function ItemPreviewModal({ item, onClose, onEdit }: ItemPreviewM
     const audioPaths = parsePathArray(item.audio_paths)
     const videoPaths = parsePathArray(item.video_paths)
 
+    // 上一条/下一条导航
+    const canGoPrev = items && currentIndex !== undefined && currentIndex > 0
+    const canGoNext = items && currentIndex !== undefined && currentIndex < items.length - 1
+
+    const goPrev = () => {
+        if (canGoPrev && onNavigate) {
+            onNavigate(currentIndex - 1)
+        }
+    }
+
+    const goNext = () => {
+        if (canGoNext && onNavigate) {
+            onNavigate(currentIndex + 1)
+        }
+    }
+
     // 键盘事件处理
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -52,14 +71,20 @@ export default function ItemPreviewModal({ item, onClose, onEdit }: ItemPreviewM
                     onClose()
                     break
                 case 'ArrowLeft':
-                    if (imagePaths.length > 1) {
-                        e.preventDefault()
+                    e.preventDefault()
+                    // 优先导航知识点，如果没有导航则切换图片
+                    if (canGoPrev) {
+                        goPrev()
+                    } else if (imagePaths.length > 1) {
                         setCurrentImageIndex(prev => (prev > 0 ? prev - 1 : imagePaths.length - 1))
                     }
                     break
                 case 'ArrowRight':
-                    if (imagePaths.length > 1) {
-                        e.preventDefault()
+                    e.preventDefault()
+                    // 优先导航知识点，如果没有导航则切换图片
+                    if (canGoNext) {
+                        goNext()
+                    } else if (imagePaths.length > 1) {
                         setCurrentImageIndex(prev => (prev < imagePaths.length - 1 ? prev + 1 : 0))
                     }
                     break
@@ -68,7 +93,7 @@ export default function ItemPreviewModal({ item, onClose, onEdit }: ItemPreviewM
 
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [onClose, imagePaths.length])
+    }, [onClose, imagePaths.length, canGoPrev, canGoNext])
 
     // 自动播放音频
     useEffect(() => {
@@ -241,9 +266,38 @@ export default function ItemPreviewModal({ item, onClose, onEdit }: ItemPreviewM
                 </div>
             </div>
 
+            {/* 底部操作栏 - 上一条/下一条按钮 */}
+            {items && items.length > 1 && (
+                <div className="p-4 md:p-6 flex items-center justify-center gap-4 md:gap-8 shrink-0 bg-black/20">
+                    <button
+                        onClick={goPrev}
+                        disabled={!canGoPrev}
+                        className="px-4 md:px-6 py-3 bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-xl transition flex items-center gap-2"
+                    >
+                        <ChevronLeft size={24} />
+                        <span className="hidden md:inline">上一条</span>
+                        <span className="hidden md:inline text-sm text-white/60">(←)</span>
+                    </button>
+
+                    <div className="text-white/60 text-sm">
+                        {(currentIndex || 0) + 1} / {items.length}
+                    </div>
+
+                    <button
+                        onClick={goNext}
+                        disabled={!canGoNext}
+                        className="px-4 md:px-6 py-3 bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-xl transition flex items-center gap-2"
+                    >
+                        <span className="hidden md:inline">下一条</span>
+                        <span className="hidden md:inline text-sm text-white/60">(→)</span>
+                        <ChevronRight size={24} />
+                    </button>
+                </div>
+            )}
+
             {/* 底部提示 */}
             <div className="p-4 text-center text-white/50 text-sm shrink-0">
-                按 ESC 关闭 {imagePaths.length > 1 && '| 左右箭头切换图片'}
+                按 ESC 关闭 {items && items.length > 1 ? '| ← → 切换知识点' : (imagePaths.length > 1 ? '| 左右箭头切换图片' : '')}
             </div>
         </div>
     )

@@ -675,13 +675,19 @@ export default function SubSectionDetailPage() {
             )}
 
             {/* 知识预览弹窗 */}
-            {previewItem && (
-                <ItemPreviewModal
-                    item={previewItem}
-                    onClose={() => setPreviewItem(null)}
-                    onEdit={handlePreviewEdit}
-                />
-            )}
+            {previewItem && (() => {
+                const itemsList = getFilteredAndSortedItems()
+                return (
+                    <ItemPreviewModal
+                        item={previewItem}
+                        items={itemsList}
+                        currentIndex={itemsList.findIndex((i: KnowledgeItem) => i.id === previewItem.id)}
+                        onClose={() => setPreviewItem(null)}
+                        onEdit={handlePreviewEdit}
+                        onNavigate={(index: number) => setPreviewItem(itemsList[index])}
+                    />
+                )
+            })()}
 
             {/* 学习弹窗 */}
             {showStudyModal && (
