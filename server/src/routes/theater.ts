@@ -1,15 +1,20 @@
 import { FastifyInstance } from 'fastify';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { getTheaterDataPath } from '../utils/deployConfigManager.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// 获取视频中心根目录（从配置读取）
+function getVideoCenterPath(): string {
+    return getTheaterDataPath();
+}
 
-// 视频中心根目录
-const VIDEO_CENTER_PATH = path.join(__dirname, '../../../videoCenter');
-const RESOURCES_PATH = path.join(VIDEO_CENTER_PATH, 'resources');
-const BREAK_PATH = path.join(VIDEO_CENTER_PATH, 'have_a_break');
+function getResourcesPath(): string {
+    return path.join(getTheaterDataPath(), 'resources');
+}
+
+function getBreakPath(): string {
+    return path.join(getTheaterDataPath(), 'have_a_break');
+}
 
 // 支持的视频格式
 const VIDEO_EXTENSIONS = ['.mp4', '.mkv', '.avi', '.mov', '.webm', '.m4v', '.flv', '.wmv'];
@@ -190,7 +195,7 @@ function updateStatistics(dirPath: string, filename: string, updates: Partial<Vi
 // 获取休息视频列表
 function getBreakVideos(): string[] {
     try {
-        const files = fs.readdirSync(BREAK_PATH);
+        const files = fs.readdirSync(getBreakPath());
         return files.filter(f => isVideoFile(f));
     } catch {
         return [];
@@ -202,7 +207,7 @@ export default async function theaterRoutes(fastify: FastifyInstance) {
     // 获取根目录板块列表
     fastify.get('/api/theater/categories', async (request, reply) => {
         try {
-            const categories = scanDirectory(RESOURCES_PATH);
+            const categories = scanDirectory(getResourcesPath());
             return { success: true, data: categories };
         } catch (error) {
             return reply.status(500).send({ success: false, error: String(error) });
@@ -213,7 +218,7 @@ export default async function theaterRoutes(fastify: FastifyInstance) {
     fastify.get<{ Params: { '*': string } }>('/api/theater/browse/*', async (request, reply) => {
         try {
             const relativePath = request.params['*'] || '';
-            const dirPath = path.join(RESOURCES_PATH, relativePath);
+            const dirPath = path.join(getResourcesPath(), relativePath);
 
             if (!fs.existsSync(dirPath)) {
                 return reply.status(404).send({ success: false, error: '目录不存在' });
@@ -284,7 +289,7 @@ export default async function theaterRoutes(fastify: FastifyInstance) {
     }>('/api/theater/stats/*', async (request, reply) => {
         try {
             const relativePath = request.params['*'] || '';
-            const dirPath = path.join(RESOURCES_PATH, relativePath);
+            const dirPath = path.join(getResourcesPath(), relativePath);
 
             if (!fs.existsSync(dirPath)) {
                 return reply.status(404).send({ success: false, error: '目录不存在' });
@@ -327,7 +332,7 @@ export default async function theaterRoutes(fastify: FastifyInstance) {
     }>('/api/theater/increment-play/*', async (request, reply) => {
         try {
             const relativePath = request.params['*'] || '';
-            const dirPath = path.join(RESOURCES_PATH, relativePath);
+            const dirPath = path.join(getResourcesPath(), relativePath);
 
             if (!fs.existsSync(dirPath)) {
                 return reply.status(404).send({ success: false, error: '目录不存在' });

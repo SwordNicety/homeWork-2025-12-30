@@ -1,14 +1,19 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { getHonorsDataPath } from './deployConfigManager.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// 获取数据目录（从配置读取）
+function getDataDir(): string {
+    return getHonorsDataPath();
+}
 
-// 数据目录
-const DATA_DIR = path.join(__dirname, '../../../fileDB/honors');
-const HALLS_FILE = path.join(DATA_DIR, 'halls.json');
-const HONORS_FILE = path.join(DATA_DIR, 'honors.json');
+function getHallsFilePath(): string {
+    return path.join(getDataDir(), 'halls.json');
+}
+
+function getHonorsFilePath(): string {
+    return path.join(getDataDir(), 'honors.json');
+}
 
 // 荣誉室（一级板块）
 export interface HonorHall {
@@ -43,41 +48,45 @@ export interface Honor {
 
 // 确保数据目录存在
 function ensureDataDir(): void {
-    if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
+    const dataDir = getDataDir();
+    const hallsFile = getHallsFilePath();
+    const honorsFile = getHonorsFilePath();
+
+    if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
     }
-    if (!fs.existsSync(HALLS_FILE)) {
-        fs.writeFileSync(HALLS_FILE, JSON.stringify([], null, 2));
+    if (!fs.existsSync(hallsFile)) {
+        fs.writeFileSync(hallsFile, JSON.stringify([], null, 2));
     }
-    if (!fs.existsSync(HONORS_FILE)) {
-        fs.writeFileSync(HONORS_FILE, JSON.stringify([], null, 2));
+    if (!fs.existsSync(honorsFile)) {
+        fs.writeFileSync(honorsFile, JSON.stringify([], null, 2));
     }
 }
 
 // 读取荣誉室列表
 function readHalls(): HonorHall[] {
     ensureDataDir();
-    const content = fs.readFileSync(HALLS_FILE, 'utf-8');
+    const content = fs.readFileSync(getHallsFilePath(), 'utf-8');
     return JSON.parse(content);
 }
 
 // 写入荣誉室列表
 function writeHalls(halls: HonorHall[]): void {
     ensureDataDir();
-    fs.writeFileSync(HALLS_FILE, JSON.stringify(halls, null, 2));
+    fs.writeFileSync(getHallsFilePath(), JSON.stringify(halls, null, 2));
 }
 
 // 读取荣誉列表
 function readHonors(): Honor[] {
     ensureDataDir();
-    const content = fs.readFileSync(HONORS_FILE, 'utf-8');
+    const content = fs.readFileSync(getHonorsFilePath(), 'utf-8');
     return JSON.parse(content);
 }
 
 // 写入荣誉列表
 function writeHonors(honors: Honor[]): void {
     ensureDataDir();
-    fs.writeFileSync(HONORS_FILE, JSON.stringify(honors, null, 2));
+    fs.writeFileSync(getHonorsFilePath(), JSON.stringify(honors, null, 2));
 }
 
 // 生成唯一ID

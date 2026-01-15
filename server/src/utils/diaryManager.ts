@@ -1,13 +1,16 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { getDiaryDataPath } from './deployConfigManager.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// 获取日记根目录（从配置读取）
+function getDiaryRoot(): string {
+    return path.join(getDiaryDataPath(), 'diaries');
+}
 
-// 日记根目录
-const DIARY_ROOT = path.join(__dirname, '../../../data/diaries');
-const DIARY_UPLOAD_ROOT = path.join(__dirname, '../../../uploadFiles/diaryFiles');
+// 获取日记上传文件根目录
+function getDiaryUploadRoot(): string {
+    return path.join(getDiaryDataPath(), 'uploads');
+}
 
 // ============ 类型定义 ============
 
@@ -134,7 +137,7 @@ function generateDiaryId(date?: Date): string {
 
 // 获取日记目录路径
 function getDiaryPath(diaryId: string): string {
-    return path.join(DIARY_ROOT, diaryId);
+    return path.join(getDiaryRoot(), diaryId);
 }
 
 // 获取日记配置文件路径
@@ -144,15 +147,15 @@ function getDiaryConfigPath(diaryId: string): string {
 
 // 获取日记上传文件目录
 function getDiaryMediaPath(diaryId: string): string {
-    return path.join(DIARY_UPLOAD_ROOT, diaryId);
+    return path.join(getDiaryUploadRoot(), diaryId);
 }
 
 // ============ 日记 CRUD ============
 
 // 获取所有日记列表（只返回基础信息）
 export function getAllDiaries(): DiaryEntry[] {
-    ensureDir(DIARY_ROOT);
-    const dirs = getDirectories(DIARY_ROOT);
+    ensureDir(getDiaryRoot());
+    const dirs = getDirectories(getDiaryRoot());
     const diaries: DiaryEntry[] = [];
 
     for (const dirName of dirs) {
@@ -318,10 +321,10 @@ export function saveMediaFile(
 
         fs.writeFileSync(filePath, buffer);
 
-        // 更新日记记录
+        // 更新日记记录（使用新的静态服务路径）
         const diary = getDiaryById(diaryId);
         if (diary) {
-            const relativePath = `uploadFiles/diaryFiles/${diaryId}/${newFilename}`;
+            const relativePath = `diaryUploads/${diaryId}/${newFilename}`;
             if (type === 'image') {
                 diary.images.push(relativePath);
                 updateDiary(diaryId, { images: diary.images });
@@ -334,7 +337,7 @@ export function saveMediaFile(
             }
         }
 
-        return { success: true, path: `uploadFiles/diaryFiles/${diaryId}/${newFilename}` };
+        return { success: true, path: `diaryUploads/${diaryId}/${newFilename}` };
     } catch (error) {
         return { success: false, error: String(error) };
     }
@@ -362,10 +365,15 @@ export function deleteMediaFile(
             updateDiary(diaryId, { audios: diary.audios });
         }
 
-        // 删除实际文件
-        const fullPath = path.join(__dirname, '../../../', filePath);
-        if (fs.existsSync(fullPath)) {
-            fs.unlinkSync(fullPath);
+        // 删除实际文件（从日记上传目录）
+        // filePath 格式：diaryUploads/{diaryId}/{filename}
+        const pathParts = filePath.split('/');
+        if (pathParts.length >= 3) {
+            const filename = pathParts[pathParts.length - 1];
+            const fullPath = path.join(getDiaryUploadRoot(), diaryId, filename);
+            if (fs.existsSync(fullPath)) {
+                fs.unlinkSync(fullPath);
+            }
         }
 
         return true;

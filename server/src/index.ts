@@ -4,6 +4,7 @@ import fastifyStatic from '@fastify/static';
 import fastifyMultipart from '@fastify/multipart';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import familyMembersRoutes from './routes/familyMembers.js';
 import knowledgeRoutes from './routes/knowledge.js';
 import diaryRoutes from './routes/diary.js';
@@ -12,9 +13,25 @@ import honorsRoutes from './routes/honors.js';
 import { initializeIndex } from './utils/knowledgeIndexManager.js';
 import { initFileDB } from './utils/familyMembersFileManager.js';
 import { initHonorsDB } from './utils/honorsManager.js';
+import {
+    loadDeployConfig,
+    getKnowledgeDataPath,
+    getTheaterDataPath,
+    getDiaryDataPath,
+    ensureDataDirectories,
+    getAllDataPaths
+} from './utils/deployConfigManager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// 加载部署配置
+const deployConfig = loadDeployConfig();
+console.log('📋 部署配置已加载');
+console.log('📂 数据路径:', getAllDataPaths());
+
+// 确保数据目录存在
+ensureDataDirectories();
 
 const fastify = Fastify({
     logger: true
@@ -31,21 +48,26 @@ await fastify.register(fastifyMultipart, {
     }
 });
 
-// 上传文件静态访问
-const uploadPath = path.join(__dirname, '../../uploadFiles');
+// 日记上传文件静态访问（从配置获取路径）
+const diaryUploadPath = path.join(getDiaryDataPath(), 'uploads');
+if (!fs.existsSync(diaryUploadPath)) {
+    fs.mkdirSync(diaryUploadPath, { recursive: true });
+}
 await fastify.register(fastifyStatic, {
-    root: uploadPath,
-    prefix: '/uploadFiles/',
+    root: diaryUploadPath,
+    prefix: '/diaryUploads/',
     decorateReply: false
 });
 
-// 知识库文件静态访问
-const knowledgePath = path.join(__dirname, '../../knowledgeFiles');
-await fastify.register(fastifyStatic, {
-    root: knowledgePath,
-    prefix: '/knowledgeFiles/',
-    decorateReply: false
-});
+// 知识库文件静态访问（从配置获取路径）
+const knowledgePath = getKnowledgeDataPath();
+if (fs.existsSync(knowledgePath)) {
+    await fastify.register(fastifyStatic, {
+        root: knowledgePath,
+        prefix: '/knowledgeFiles/',
+        decorateReply: false
+    });
+}
 
 // 配置文件静态访问
 const configsPath = path.join(__dirname, '../../configs');
@@ -55,13 +77,15 @@ await fastify.register(fastifyStatic, {
     decorateReply: false
 });
 
-// 视频中心文件静态访问
-const videoCenterPath = path.join(__dirname, '../../videoCenter');
-await fastify.register(fastifyStatic, {
-    root: videoCenterPath,
-    prefix: '/videoCenter/',
-    decorateReply: false
-});
+// 视频中心文件静态访问（从配置获取路径）
+const videoCenterPath = getTheaterDataPath();
+if (fs.existsSync(videoCenterPath)) {
+    await fastify.register(fastifyStatic, {
+        root: videoCenterPath,
+        prefix: '/videoCenter/',
+        decorateReply: false
+    });
+}
 
 // 静态文件服务 - 生产环境下服务前端构建产物
 const clientDistPath = path.join(__dirname, '../../client/dist');

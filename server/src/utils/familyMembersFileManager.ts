@@ -1,12 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { getFamilyMembersDataPath } from './deployConfigManager.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// 数据存储根目录
-const FILE_DB_ROOT = path.join(__dirname, '../../../fileDB/familyMembers');
+// 获取数据存储根目录（从配置读取）
+function getFileDBRoot(): string {
+    return getFamilyMembersDataPath();
+}
 
 // ============ 类型定义 ============
 
@@ -100,21 +99,21 @@ function getNow(): string {
 // ============ 文件路径 ============
 
 function getMembersFilePath(): string {
-    return path.join(FILE_DB_ROOT, 'members.json');
+    return path.join(getFileDBRoot(), 'members.json');
 }
 
 function getAttributeDefinitionsFilePath(): string {
-    return path.join(FILE_DB_ROOT, 'attributeDefinitions.json');
+    return path.join(getFileDBRoot(), 'attributeDefinitions.json');
 }
 
 function getAttributeValuesFilePath(): string {
-    return path.join(FILE_DB_ROOT, 'attributeValues.json');
+    return path.join(getFileDBRoot(), 'attributeValues.json');
 }
 
 // ============ 初始化 ============
 
 export function initFileDB(): void {
-    ensureDir(FILE_DB_ROOT);
+    ensureDir(getFileDBRoot());
 
     // 确保各数据文件存在
     if (!fs.existsSync(getMembersFilePath())) {

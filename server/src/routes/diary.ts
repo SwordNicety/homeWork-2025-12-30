@@ -85,7 +85,8 @@ export default async function diaryRoutes(fastify: FastifyInstance) {
     fastify.put<{
         Params: { id: string };
         Body: {
-            weather?: string;
+            weather?: string[];
+            weatherFeel?: string;
             events?: string;
             moods?: DiaryManager.MoodRecord[];
             meals?: DiaryManager.MealRecord[];

@@ -9,5 +9,12 @@
     },
     "logs": {
         "path": "./logs"
+    },
+    "dataPaths": {
+        "theater": "../homeWorkData/theater",
+        "knowledge": "../homeWorkData/knowledge",
+        "familyMembers": "../homeWorkData/familyMembers",
+        "diary": "../homeWorkData/diary",
+        "honors": "../homeWorkData/honors"
     }
 }

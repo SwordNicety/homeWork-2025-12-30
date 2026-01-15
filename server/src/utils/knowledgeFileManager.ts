@@ -1,12 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { getKnowledgeDataPath, getProjectRoot } from './deployConfigManager.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// 知识库根目录
-const KNOWLEDGE_ROOT = path.join(__dirname, '../../../knowledgeFiles');
+// 获取知识库根目录（从配置读取）
+function getKnowledgeRoot(): string {
+    return getKnowledgeDataPath();
+}
 
 // ============ 类型定义 ============
 
@@ -175,8 +174,7 @@ function findIconFile(dirPath: string): string | undefined {
 }
 
 function getRelativePath(absolutePath: string): string {
-    const projectRoot = path.join(__dirname, '../../../');
-    return path.relative(projectRoot, absolutePath);
+    return path.relative(getProjectRoot(), absolutePath);
 }
 
 function getDirectories(dirPath: string): string[] {
@@ -230,12 +228,12 @@ function ensureUniqueDirName(parentPath: string, baseDirName: string): string {
 // ============ 一级板块（知识库）操作 ============
 
 export function getAllCategories(): Category[] {
-    ensureDir(KNOWLEDGE_ROOT);
-    const dirs = getDirectories(KNOWLEDGE_ROOT);
+    ensureDir(getKnowledgeRoot());
+    const dirs = getDirectories(getKnowledgeRoot());
     const categories: Category[] = [];
 
     for (const dirName of dirs) {
-        const categoryPath = path.join(KNOWLEDGE_ROOT, dirName);
+        const categoryPath = path.join(getKnowledgeRoot(), dirName);
         const configPath = path.join(categoryPath, 'config.json');
         const config = readJsonFile<CategoryConfig>(configPath);
 
@@ -290,7 +288,7 @@ export function getAllCategories(): Category[] {
 }
 
 export function getCategoryById(categoryId: string): Category | null {
-    const categoryPath = path.join(KNOWLEDGE_ROOT, categoryId);
+    const categoryPath = path.join(getKnowledgeRoot(), categoryId);
     const configPath = path.join(categoryPath, 'config.json');
     const config = readJsonFile<CategoryConfig>(configPath);
 
@@ -340,7 +338,7 @@ export function getCategoryById(categoryId: string): Category | null {
 
 export function createCategory(data: { name: string; description?: string; color?: string; sort_weight?: number; dir_name: string }): Category {
     const dirName = data.dir_name || generateDirName(data.name);
-    const categoryPath = path.join(KNOWLEDGE_ROOT, dirName);
+    const categoryPath = path.join(getKnowledgeRoot(), dirName);
     ensureDir(categoryPath);
 
     const now = new Date().toISOString();
@@ -370,7 +368,7 @@ export function createCategory(data: { name: string; description?: string; color
 }
 
 export function updateCategory(categoryId: string, data: { name?: string; description?: string; color?: string; sort_weight?: number }): boolean {
-    const categoryPath = path.join(KNOWLEDGE_ROOT, categoryId);
+    const categoryPath = path.join(getKnowledgeRoot(), categoryId);
     const configPath = path.join(categoryPath, 'config.json');
     const config = readJsonFile<CategoryConfig>(configPath);
 
@@ -390,7 +388,7 @@ export function updateCategory(categoryId: string, data: { name?: string; descri
 }
 
 export function deleteCategory(categoryId: string): { success: boolean; error?: string } {
-    const categoryPath = path.join(KNOWLEDGE_ROOT, categoryId);
+    const categoryPath = path.join(getKnowledgeRoot(), categoryId);
 
     if (!fs.existsSync(categoryPath)) {
         return { success: false, error: '知识库不存在' };
@@ -414,7 +412,7 @@ export function deleteCategory(categoryId: string): { success: boolean; error?: 
 // ============ 二级板块操作 ============
 
 export function getSectionsByCategory(categoryId: string): Section[] {
-    const categoryPath = path.join(KNOWLEDGE_ROOT, categoryId);
+    const categoryPath = path.join(getKnowledgeRoot(), categoryId);
     const dirs = getDirectories(categoryPath);
     const sections: Section[] = [];
 
@@ -479,7 +477,7 @@ export function getSectionById(sectionId: string): Section | null {
     if (parts.length !== 2) return null;
 
     const [categoryId, dirName] = parts;
-    const sectionPath = path.join(KNOWLEDGE_ROOT, categoryId, dirName);
+    const sectionPath = path.join(getKnowledgeRoot(), categoryId, dirName);
     const configPath = path.join(sectionPath, 'config.json');
     const config = readJsonFile<SectionConfig>(configPath);
 
@@ -530,7 +528,7 @@ export function getSectionById(sectionId: string): Section | null {
 
 export function createSection(categoryId: string, data: { name: string; description?: string; color?: string; sort_weight?: number; dir_name: string }): Section {
     const dirName = data.dir_name || generateDirName(data.name);
-    const sectionPath = path.join(KNOWLEDGE_ROOT, categoryId, dirName);
+    const sectionPath = path.join(getKnowledgeRoot(), categoryId, dirName);
     ensureDir(sectionPath);
 
     const now = new Date().toISOString();
@@ -565,7 +563,7 @@ export function updateSection(sectionId: string, data: { name?: string; descript
     if (parts.length !== 2) return false;
 
     const [categoryId, dirName] = parts;
-    const sectionPath = path.join(KNOWLEDGE_ROOT, categoryId, dirName);
+    const sectionPath = path.join(getKnowledgeRoot(), categoryId, dirName);
     const configPath = path.join(sectionPath, 'config.json');
     const config = readJsonFile<SectionConfig>(configPath);
 
@@ -589,7 +587,7 @@ export function deleteSection(sectionId: string): { success: boolean; error?: st
     if (parts.length !== 2) return { success: false, error: '无效的板块ID' };
 
     const [categoryId, dirName] = parts;
-    const sectionPath = path.join(KNOWLEDGE_ROOT, categoryId, dirName);
+    const sectionPath = path.join(getKnowledgeRoot(), categoryId, dirName);
 
     if (!fs.existsSync(sectionPath)) {
         return { success: false, error: '二级板块不存在' };
@@ -617,7 +615,7 @@ export function getSubSectionsBySection(sectionId: string): SubSection[] {
     if (parts.length !== 2) return [];
 
     const [categoryId, sectionDirName] = parts;
-    const sectionPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName);
+    const sectionPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName);
     const dirs = getDirectories(sectionPath);
     const subSections: SubSection[] = [];
 
@@ -671,16 +669,16 @@ export function getSubSectionById(subSectionId: string): SubSection | null {
     if (parts.length !== 3) return null;
 
     const [categoryId, sectionDirName, dirName] = parts;
-    const subSectionPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, dirName);
+    const subSectionPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName, dirName);
     const configPath = path.join(subSectionPath, 'config.json');
     const config = readJsonFile<SubSectionConfig>(configPath);
 
     if (!config) return null;
 
     // 获取上级信息
-    const sectionConfigPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, 'config.json');
+    const sectionConfigPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName, 'config.json');
     const sectionConfig = readJsonFile<SectionConfig>(sectionConfigPath);
-    const categoryConfigPath = path.join(KNOWLEDGE_ROOT, categoryId, 'config.json');
+    const categoryConfigPath = path.join(getKnowledgeRoot(), categoryId, 'config.json');
     const categoryConfig = readJsonFile<CategoryConfig>(categoryConfigPath);
 
     const iconPath = findIconFile(subSectionPath);
@@ -727,7 +725,7 @@ export function createSubSection(sectionId: string, data: { name: string; descri
 
     const [categoryId, sectionDirName] = parts;
     const dirName = data.dir_name || generateDirName(data.name);
-    const subSectionPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, dirName);
+    const subSectionPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName, dirName);
     ensureDir(subSectionPath);
 
     const now = new Date().toISOString();
@@ -762,7 +760,7 @@ export function updateSubSection(subSectionId: string, data: { name?: string; de
     if (parts.length !== 3) return false;
 
     const [categoryId, sectionDirName, dirName] = parts;
-    const subSectionPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, dirName);
+    const subSectionPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName, dirName);
     const configPath = path.join(subSectionPath, 'config.json');
     const config = readJsonFile<SubSectionConfig>(configPath);
 
@@ -786,7 +784,7 @@ export function deleteSubSection(subSectionId: string): { success: boolean; erro
     if (parts.length !== 3) return { success: false, error: '无效的板块ID' };
 
     const [categoryId, sectionDirName, dirName] = parts;
-    const subSectionPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, dirName);
+    const subSectionPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName, dirName);
 
     if (!fs.existsSync(subSectionPath)) {
         return { success: false, error: '三级板块不存在' };
@@ -814,7 +812,7 @@ export function getItemsBySubSection(subSectionId: string): Item[] {
     if (parts.length !== 3) return [];
 
     const [categoryId, sectionDirName, subSectionDirName] = parts;
-    const subSectionPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, subSectionDirName);
+    const subSectionPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName, subSectionDirName);
     const dirs = getDirectories(subSectionPath);
     const items: Item[] = [];
 
@@ -866,7 +864,7 @@ export function getItemById(itemId: string): Item | null {
     if (parts.length !== 4) return null;
 
     const [categoryId, sectionDirName, subSectionDirName, dirName] = parts;
-    const itemPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, subSectionDirName, dirName);
+    const itemPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName, subSectionDirName, dirName);
     const configPath = path.join(itemPath, 'config.json');
     const config = readJsonFile<ItemConfig>(configPath);
 
@@ -916,7 +914,7 @@ export function createItem(subSectionId: string, data: {
     if (parts.length !== 3) return null;
 
     const [categoryId, sectionDirName, subSectionDirName] = parts;
-    const parentPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, subSectionDirName);
+    const parentPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName, subSectionDirName);
     const baseDirName = generateDirName(data.name, data.keywords);
     const dirName = ensureUniqueDirName(parentPath, baseDirName);
     const itemPath = path.join(parentPath, dirName);
@@ -930,7 +928,7 @@ export function createItem(subSectionId: string, data: {
     const videoFiles: string[] = [];
 
     if (data.temp_files && data.temp_files.length > 0) {
-        const tempDir = path.join(KNOWLEDGE_ROOT, '.temp');
+        const tempDir = path.join(getKnowledgeRoot(), '.temp');
         for (const tempFile of data.temp_files) {
             const tempFilePath = path.join(tempDir, tempFile);
             if (fs.existsSync(tempFilePath)) {
@@ -1013,7 +1011,7 @@ export function updateItem(itemId: string, data: {
     if (parts.length !== 4) return false;
 
     const [categoryId, sectionDirName, subSectionDirName, dirName] = parts;
-    const itemPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, subSectionDirName, dirName);
+    const itemPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName, subSectionDirName, dirName);
     const configPath = path.join(itemPath, 'config.json');
     const config = readJsonFile<ItemConfig>(configPath);
 
@@ -1042,7 +1040,7 @@ export function deleteItem(itemId: string): { success: boolean; error?: string }
     if (parts.length !== 4) return { success: false, error: '无效的知识条目ID' };
 
     const [categoryId, sectionDirName, subSectionDirName, dirName] = parts;
-    const itemPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, subSectionDirName, dirName);
+    const itemPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName, subSectionDirName, dirName);
 
     if (!fs.existsSync(itemPath)) {
         return { success: false, error: '知识条目不存在' };
@@ -1057,7 +1055,7 @@ export function updateItemStudy(itemId: string, isCorrect: boolean): boolean {
     if (parts.length !== 4) return false;
 
     const [categoryId, sectionDirName, subSectionDirName, dirName] = parts;
-    const itemPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, subSectionDirName, dirName);
+    const itemPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName, subSectionDirName, dirName);
     const configPath = path.join(itemPath, 'config.json');
     const config = readJsonFile<ItemConfig>(configPath);
 
@@ -1085,7 +1083,7 @@ export function clearItemStudyRecord(itemId: string): boolean {
     if (parts.length !== 4) return false;
 
     const [categoryId, sectionDirName, subSectionDirName, dirName] = parts;
-    const itemPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, subSectionDirName, dirName);
+    const itemPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName, subSectionDirName, dirName);
     const configPath = path.join(itemPath, 'config.json');
     const config = readJsonFile<ItemConfig>(configPath);
 
@@ -1122,7 +1120,7 @@ export function getItemPath(itemId: string): string | null {
     if (parts.length !== 4) return null;
 
     const [categoryId, sectionDirName, subSectionDirName, dirName] = parts;
-    return path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, subSectionDirName, dirName);
+    return path.join(getKnowledgeRoot(), categoryId, sectionDirName, subSectionDirName, dirName);
 }
 
 export function getSubSectionPath(subSectionId: string): string | null {
@@ -1130,7 +1128,7 @@ export function getSubSectionPath(subSectionId: string): string | null {
     if (parts.length !== 3) return null;
 
     const [categoryId, sectionDirName, subSectionDirName] = parts;
-    return path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, subSectionDirName);
+    return path.join(getKnowledgeRoot(), categoryId, sectionDirName, subSectionDirName);
 }
 
 export function getSectionPath(sectionId: string): string | null {
@@ -1138,11 +1136,11 @@ export function getSectionPath(sectionId: string): string | null {
     if (parts.length !== 2) return null;
 
     const [categoryId, sectionDirName] = parts;
-    return path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName);
+    return path.join(getKnowledgeRoot(), categoryId, sectionDirName);
 }
 
 export function getCategoryPath(categoryId: string): string | null {
-    return path.join(KNOWLEDGE_ROOT, categoryId);
+    return path.join(getKnowledgeRoot(), categoryId);
 }
 
 export function addMediaToItem(itemId: string, type: 'audio' | 'image' | 'video', fileName: string): boolean {
@@ -1150,7 +1148,7 @@ export function addMediaToItem(itemId: string, type: 'audio' | 'image' | 'video'
     if (parts.length !== 4) return false;
 
     const [categoryId, sectionDirName, subSectionDirName, dirName] = parts;
-    const itemPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, subSectionDirName, dirName);
+    const itemPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName, subSectionDirName, dirName);
     const configPath = path.join(itemPath, 'config.json');
     const config = readJsonFile<ItemConfig>(configPath);
 
@@ -1175,7 +1173,7 @@ export function removeMediaFromItem(itemId: string, type: 'audio' | 'image' | 'v
     if (parts.length !== 4) return false;
 
     const [categoryId, sectionDirName, subSectionDirName, dirName] = parts;
-    const itemPath = path.join(KNOWLEDGE_ROOT, categoryId, sectionDirName, subSectionDirName, dirName);
+    const itemPath = path.join(getKnowledgeRoot(), categoryId, sectionDirName, subSectionDirName, dirName);
     const configPath = path.join(itemPath, 'config.json');
     const config = readJsonFile<ItemConfig>(configPath);
 
@@ -1207,7 +1205,7 @@ export function removeMediaFromItem(itemId: string, type: 'audio' | 'image' | 'v
 
 // 临时文件上传目录管理
 export function getTempDir(): string {
-    const tempDir = path.join(KNOWLEDGE_ROOT, '.temp');
+    const tempDir = path.join(getKnowledgeRoot(), '.temp');
     ensureDir(tempDir);
     return tempDir;
 }
@@ -1243,7 +1241,7 @@ export function cleanupTempFiles(fileNames: string[]): void {
 
 // 清理过期的临时文件（超过24小时）
 export function cleanupExpiredTempFiles(): number {
-    const tempDir = path.join(KNOWLEDGE_ROOT, '.temp');
+    const tempDir = path.join(getKnowledgeRoot(), '.temp');
     if (!fs.existsSync(tempDir)) return 0;
 
     const now = Date.now();
@@ -1268,4 +1266,5 @@ export function getTempFileRelativePath(fileName: string): string {
     return `knowledgeFiles/.temp/${fileName}`;
 }
 
-export { KNOWLEDGE_ROOT };
+// 导出知识库根目录获取函数
+export { getKnowledgeRoot };
