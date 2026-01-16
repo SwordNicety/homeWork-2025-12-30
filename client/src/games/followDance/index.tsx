@@ -259,6 +259,11 @@ function DanceStage({
     const startTimeRef = useRef<number>(0);
     const [showEffects, setShowEffects] = useState(true);
 
+    // 顶部滑轨：屏幕占比 / 模版音量 / 模版缩放
+    const [splitRatio, setSplitRatio] = useState(50); // 左侧百分比
+    const [templateVolume, setTemplateVolume] = useState(80); // 0-100
+    const [templateScale, setTemplateScale] = useState(100); // 50-150
+
     // 开启摄像头
     const enableCamera = async () => {
         try {
@@ -313,6 +318,16 @@ function DanceStage({
         };
     }, []);
 
+    const seekTemplate = useCallback((deltaSeconds: number) => {
+        const videoEl = videoRef.current;
+        if (!videoEl) return;
+        const duration = videoEl.duration;
+        if (!Number.isFinite(duration) || duration <= 0) return;
+
+        const nextTime = Math.min(Math.max(videoEl.currentTime + deltaSeconds, 0), duration);
+        videoEl.currentTime = nextTime;
+    }, []);
+
     // 当 video 元素或 stream 就绪时，确保绑定并播放
     useEffect(() => {
         const videoEl = cameraRef.current;
@@ -327,6 +342,31 @@ function DanceStage({
             // 需要用户手势时忽略
         });
     }, [cameraEnabled]);
+
+    // 模版音量
+    useEffect(() => {
+        if (!videoRef.current) return;
+        videoRef.current.volume = Math.min(Math.max(templateVolume / 100, 0), 1);
+    }, [templateVolume]);
+
+    // 方向键控制模版视频进度（每次 10s）
+    useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+            const target = e.target as HTMLElement | null;
+            if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable) {
+                return;
+            }
+
+            e.preventDefault();
+            seekTemplate(e.key === 'ArrowRight' ? 10 : -10);
+        };
+
+        window.addEventListener('keydown', onKeyDown, { passive: false });
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [seekTemplate]);
 
     // 播放控制
     const togglePlay = () => {
@@ -388,34 +428,83 @@ function DanceStage({
             )}
 
             {/* 顶部栏 */}
-            <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-10">
-                <button
-                    onClick={handleBack}
-                    className="p-2 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/30"
-                >
-                    <ArrowLeft size={24} />
-                </button>
-                <h1 className="text-xl font-bold text-white">{template.name}</h1>
-                <div className="flex gap-2">
+            <div className="absolute top-0 left-0 right-0 p-4 z-10">
+                <div className="flex items-center justify-between">
                     <button
-                        onClick={() => setShowEffects(!showEffects)}
-                        className={`p-2 rounded-full ${showEffects ? 'bg-yellow-500' : 'bg-white/20'} text-white`}
+                        onClick={handleBack}
+                        className="p-2 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/30"
                     >
-                        <Sparkles size={24} />
+                        <ArrowLeft size={24} />
                     </button>
-                    <button
-                        onClick={cameraEnabled ? disableCamera : enableCamera}
-                        className={`p-2 rounded-full ${cameraEnabled ? 'bg-green-500' : 'bg-white/20'} text-white`}
-                    >
-                        {cameraEnabled ? <Camera size={24} /> : <CameraOff size={24} />}
-                    </button>
+                    <h1 className="text-xl font-bold text-white">{template.name}</h1>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setShowEffects(!showEffects)}
+                            className={`p-2 rounded-full ${showEffects ? 'bg-yellow-500' : 'bg-white/20'} text-white`}
+                        >
+                            <Sparkles size={24} />
+                        </button>
+                        <button
+                            onClick={cameraEnabled ? disableCamera : enableCamera}
+                            className={`p-2 rounded-full ${cameraEnabled ? 'bg-green-500' : 'bg-white/20'} text-white`}
+                        >
+                            {cameraEnabled ? <Camera size={24} /> : <CameraOff size={24} />}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="mt-3 bg-white/10 backdrop-blur rounded-2xl p-3 text-white">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="flex items-center gap-3">
+                            <div className="text-xs whitespace-nowrap">屏幕占比</div>
+                            <input
+                                type="range"
+                                min={20}
+                                max={80}
+                                step={1}
+                                value={splitRatio}
+                                onChange={(e) => setSplitRatio(Number(e.target.value))}
+                                className="w-full"
+                            />
+                            <div className="text-xs w-12 text-right">{splitRatio}:{100 - splitRatio}</div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="text-xs whitespace-nowrap">音量</div>
+                            <input
+                                type="range"
+                                min={0}
+                                max={100}
+                                step={1}
+                                value={templateVolume}
+                                onChange={(e) => setTemplateVolume(Number(e.target.value))}
+                                className="w-full"
+                            />
+                            <div className="text-xs w-12 text-right">{templateVolume}%</div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="text-xs whitespace-nowrap">缩放</div>
+                            <input
+                                type="range"
+                                min={50}
+                                max={150}
+                                step={1}
+                                value={templateScale}
+                                onChange={(e) => setTemplateScale(Number(e.target.value))}
+                                className="w-full"
+                            />
+                            <div className="text-xs w-12 text-right">{templateScale}%</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* 主内容区 */}
-            <div className="h-full pt-16 pb-24 px-4 flex gap-4">
+            <div className="h-full pt-32 pb-24 px-4 flex gap-4">
                 {/* 摄像头画面 */}
-                <div className="flex-1 rounded-2xl overflow-hidden bg-black/30 backdrop-blur relative">
+                <div
+                    className="rounded-2xl overflow-hidden bg-black/30 backdrop-blur relative min-w-0"
+                    style={{ flex: `0 0 ${splitRatio}%` }}
+                >
                     <video
                         ref={cameraRef}
                         autoPlay
@@ -438,11 +527,15 @@ function DanceStage({
                 </div>
 
                 {/* 模板视频 */}
-                <div className="flex-1 rounded-2xl overflow-hidden bg-black/30 backdrop-blur relative">
+                <div
+                    className="rounded-2xl overflow-hidden bg-black/30 backdrop-blur relative min-w-0"
+                    style={{ flex: `0 0 ${100 - splitRatio}%` }}
+                >
                     <video
                         ref={videoRef}
                         src={template.videoUrl}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
+                        style={{ transform: `scale(${templateScale / 100})`, transformOrigin: 'center center' }}
                         onEnded={handleVideoEnd}
                         playsInline
                     />
