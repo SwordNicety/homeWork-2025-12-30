@@ -54,7 +54,7 @@ await fastify.register(cors, {
 // 注册文件上传支持
 await fastify.register(fastifyMultipart, {
     limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB
+        fileSize: 500 * 1024 * 1024, // 500MB - 支持大视频文件
     }
 });
 

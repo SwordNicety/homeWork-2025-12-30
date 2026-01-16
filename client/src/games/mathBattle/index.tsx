@@ -515,7 +515,7 @@ export default function MathBattlePage() {
                 })
             });
         }
-        navigate('/game-space');
+        navigate('/games');
     };
 
     // 游戏中

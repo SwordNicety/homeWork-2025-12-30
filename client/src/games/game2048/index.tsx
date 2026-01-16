@@ -460,7 +460,7 @@ export default function Game2048Page() {
         }
         // 上报数据
         await reportGameEnd();
-        navigate('/game-space');
+        navigate('/games');
     };
 
     // 更改格子大小

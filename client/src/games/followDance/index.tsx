@@ -285,8 +285,11 @@ function DanceStage({
         setCameraEnabled(false);
     };
 
-    // 组件卸载时清理
+    // 组件挂载时自动开启摄像头，卸载时清理
     useEffect(() => {
+        // 自动开启摄像头
+        enableCamera();
+        
         return () => {
             disableCamera();
         };
@@ -495,7 +498,7 @@ export default function FollowDancePage() {
                 })
             });
         }
-        navigate('/game-space');
+        navigate('/games');
     };
 
     // 显示跳舞界面
