@@ -24,3 +24,5 @@ Thumbs.db
 
 # 本地部署配置（不跟踪）
 configs/localDeployConfig.json
+logs/server.pid
+logs/server.log
